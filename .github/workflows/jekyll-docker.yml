@@ -1,4 +1,5 @@
-name: Jekyll site CI
+name: Ingoodhands_tra
+title: Ingoodhands_tra
 
 on:
   push:
