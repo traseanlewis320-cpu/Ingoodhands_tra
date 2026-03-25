@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookNow - Smart Booking System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-accent: #764ba2;
+            --primary-soft: #f5f3ff;
+            --global-bg: #f9fafb;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+        }
+
+        body { font-family: 'Space Grotesk', sans-serif; background-color: var(--global-bg); transition: background-color 0.5s ease; color: var(--text-primary); }
+        
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark-glass {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-bg {
+            background: var(--primary-gradient);
+        }
+
+        .gradient-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .slot-selected {
+            background: var(--primary-gradient);
+            color: white !important;
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px -5px rgba(102, 126, 234, 0.4);
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        .calendar-day {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .calendar-day:hover:not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            background: white;
+        }
+        
+        .calendar-day.selected {
+            background: var(--primary-gradient);
+            color: white !important;
+            font-weight: bold;
+        }
+        
+        .calendar-day.disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+        
+        .time-slot {
+            transition: all 0.3s ease;
+        }
+        
+        .time-slot:hover:not(.booked) {
+            border-color: var(--primary-accent);
+            transform: translateY(-2px);
+        }
+        
+        .time-slot.booked {
+            background: #fee2e2;
+            color: #991b1b;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .admin-card {
+            transition: all 0.3s ease;
+        }
+        
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-gradient); border-radius: 4px; }
+        
+        .notification {
+            animation: slideInRight 0.4s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .gallery-item {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 30px 40px -10px rgba(0, 0, 0, 0.2);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .lightbox-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-modal.active { display: flex; }
+        .lightbox-content { max-width: 90vw; max-height: 90vh; position: relative; }
+        .lightbox-content img { max-width: 100%; max-height: 90vh; border-radius: 1rem; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5); }
+        .lightbox-close { position: absolute; top: -50px; right: 0; color: white; font-size: 30px; cursor: pointer; }
+
+        .unified-card { background: white; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
+        .admin-text-primary { color: #111827; }
+        .admin-text-secondary { color: #4b5563; }
+        .admin-input { background: #f9fafb; border: 1px solid #e5e7eb; transition: all 0.2s; }
+        .admin-input:focus { border-color: var(--primary-accent); box-shadow: 0 0 0 4px var(--primary-soft); }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating-art { animation: float 6s ease-in-out infinite; }
+        .floating-art:nth-child(even) { animation-delay: 2s; }
+        
+        .gallery-item {
+            position: relative;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: grayscale(0%) brightness(1);
+            transform: scale(1);
+            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            opacity: 1;
+        }
+
+        /* Match Cropper view strictly to carousel frame */
+        .cropper-view-box,
+        .cropper-face {
+            border-radius: 2rem;
+            outline: 2px solid var(--primary-accent);
+            outline-color: rgba(255, 255, 255, 0.8);
+        }
+
+
+        /* Predefined Themes */
+        body.theme-oceanic { 
+            --primary-gradient: linear-gradient(135deg, #0f172a 0%, #0891b2 100%);
+            --primary-accent: #0ea5e9;
+            --primary-soft: #f0f9ff;
+            --global-bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.7);
+        }
+        body.theme-golden { 
+            --primary-gradient: linear-gradient(135deg, #78350f 0%, #f59e0b 100%);
+            --primary-accent: #d97706;
+            --primary-soft: #fffbeb;
+            --global-bg: #fffcf0;
+            --card-bg: rgba(255, 255, 255, 0.7);
+        }
+        body.theme-midnight { 
+            --primary-gradient: linear-gradient(135deg, #000000 0%, #312e81 100%);
+            --primary-accent: #6366f1;
+            --primary-soft: #1e1b4b;
+            --global-bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        /* Midnight Mode Overrides */
+        body.theme-midnight .text-gray-900, body.theme-midnight .text-gray-800, body.theme-midnight .text-gray-700, body.theme-midnight h1, body.theme-midnight h2, body.theme-midnight h3, body.theme-midnight h4 { color: #f8fafc !important; }
+        body.theme-midnight .text-gray-600, body.theme-midnight .text-gray-500, body.theme-midnight .text-gray-400 { color: #94a3b8 !important; }
+        body.theme-midnight .glass { background: rgba(30, 41, 59, 0.7) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+        body.theme-midnight .unified-card { background: #1e293b !important; border-color: #334155 !important; }
+        body.theme-midnight .admin-text-primary { color: #f8fafc !important; }
+        body.theme-midnight .admin-text-secondary { color: #94a3b8 !important; }
+        body.theme-midnight .admin-input { background: #0f172a !important; border-color: #334155 !important; color: #f8fafc !important; }
+        body.theme-midnight .bg-white { background-color: #1e293b !important; }
+        body.theme-midnight .bg-gray-50 { background-color: #0f172a !important; }
+    </style>
+    <base target="_blank">
+</head>
+<body class="text-gray-800 overflow-x-hidden">
+    <nav class="fixed top-0 left-0 right-0 z-[100] glass border-b border-gray-200" style="border-bottom-color: rgb(229, 231, 235); border-bottom-style: solid; border-bottom-width: 0px;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center cursor-pointer" onclick="showPage('booking')">
+                    <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center text-white font-bold text-xl mr-3 shadow-lg"> B </div>
+                    <span class="font-bold text-xl tracking-tight text-gray-900 uppercase" id="nav-business-name">BookNow</span>
+                </div>
+                <div class="hidden md:flex space-x-10">
+                    <button onclick="showPage('booking')" class="nav-btn text-gray-700 hover:text-purple-600 font-bold transition text-sm uppercase tracking-widest">Book Appointment</button>
+                    <button onclick="showAdminLogin()" class="nav-btn text-gray-700 hover:text-purple-600 font-bold transition flex items-center text-sm uppercase tracking-widest"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</button>
+                </div>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-gray-700"><i class="fas fa-bars text-2xl"></i></button>
+            </div>
+        </div>
+    </nav>
+    <div id="notification-container" class="fixed top-20 right-4 z-[100] space-y-2"></div>
+
+    <!-- BOOKING PAGE -->
+    <div id="booking-page" class="page min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Hero Section -->
+            <div class="text-center mb-12 animate-slide-in">
+                <h1 class="text-5xl md:text-7xl font-bold text-gray-900 mb-6" id="hero-title">Book Luxe Experience</h1>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto" id="hero-subtitle">Professional services tailored to your schedule. Choose your experience below.</p>
+                <!-- Social Links -->
+                <div class="flex justify-center space-x-6 mt-10">
+                    <a id="instagram-link" href="#" target="_blank" class="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center text-pink-500 hover:scale-110 transition"><i class="fab fa-instagram text-2xl"></i></a>
+                    <a id="tiktok-link" href="#" target="_blank" class="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center text-black hover:scale-110 transition"><i class="fab fa-tiktok text-2xl"></i></a>
+                </div>
+            </div>
+
+            <!-- Studio Gallery Carousel -->
+            <div class="mb-8 relative group">
+                <div class="relative max-w-[100vw] mx-auto overflow-hidden">
+                    <!-- Carousel Controls -->
+                    <button onclick="scrollGallery(-1)" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/80 backdrop-blur rounded-full shadow-xl flex items-center justify-center text-gray-900 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 -translate-x-6">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    
+                    <div id="gallery-grid" class="flex overflow-x-auto gap-6 pb-6 transition-all scroll-smooth no-scrollbar snap-x snap-mandatory px-4" style="mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);">
+                        <!-- Items injected by JS -->
+                    </div>
+                    
+                    <button onclick="scrollGallery(1)" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/80 backdrop-blur rounded-full shadow-xl flex items-center justify-center text-gray-900 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 translate-x-6">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+
+            <div class="grid lg:grid-cols-12 gap-10 items-start">
+                <!-- Sidebar (Service & Info) -->
+                <div class="lg:col-span-4 space-y-8">
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/50 shadow-2xl space-y-6">
+                        <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 flex items-center"><i class="fas fa-magic mr-3 text-purple-600"></i> Select Experience</h3>
+                        <div id="service-grid" class="space-y-4"></div>
+                    </div>
+
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/50 shadow-2xl">
+                        <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-6 flex items-center"><i class="fas fa-info-circle mr-3 text-purple-600"></i> Knowledge Hub</h3>
+                        <div id="business-info-display" class="space-y-4 text-sm font-medium text-gray-600">
+                             <div class="flex items-start"><i class="fas fa-map-marker-alt mt-1 mr-3 text-purple-600"></i><span id="sum-address"></span></div>
+                             <div class="flex items-center"><i class="fas fa-phone mr-3 text-purple-600"></i><span id="sum-phone-info"></span></div>
+                             <div class="flex items-center"><i class="fas fa-clock mr-3 text-purple-600"></i><span id="sum-hours"></span></div>
+                             <div class="pt-4 mt-4 border-t border-gray-100 flex space-x-4">
+                                 <a id="side-instagram" href="#" target="_blank" class="text-gray-400 hover:text-pink-500 transition"><i class="fab fa-instagram text-xl"></i></a>
+                                 <a id="side-tiktok" href="#" target="_blank" class="text-gray-400 hover:text-black transition"><i class="fab fa-tiktok text-xl"></i></a>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content (Calendar & Booking) -->
+                <div class="lg:col-span-8 space-y-8">
+                    <!-- Calendar Section -->
+                    <div class="glass p-10 rounded-[3rem] border border-white/50 shadow-2xl">
+                        <div class="flex justify-between items-center mb-10">
+                            <button onclick="changeMonth(-1)" class="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition"><i class="fas fa-chevron-left"></i></button>
+                            <h4 id="current-month" class="text-2xl font-black uppercase tracking-widest font-heading"></h4>
+                            <button onclick="changeMonth(1)" class="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-4 mb-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+                        </div>
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-4 mb-4"></div>
+                    </div>
+
+                    <!-- Time Slots Section -->
+                    <div id="time-selection-area" class="glass p-10 rounded-[3rem] border border-white/50 shadow-2xl hidden animate-slide-in">
+                        <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-8 text-center italic">Available Slots for <span id="display-date" class="text-gray-900 not-italic ml-2"></span></h3>
+                        <div id="time-slots" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                    </div>
+
+                    <!-- Booking Form Section -->
+                    <div id="booking-form-area" class="glass p-10 rounded-[3rem] border border-white/50 shadow-2xl hidden animate-slide-in">
+                        <div class="mb-10 text-center">
+                            <h3 class="text-3xl font-black text-gray-900 tracking-tight font-heading">Secure <span class="gradient-text">Appointment</span></h3>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Personalize your luxury experience</p>
+                        </div>
+                        <form onsubmit="handleBooking(event)" class="space-y-6">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="space-y-1.5"><label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label><input type="text" id="custName" class="w-full bg-white/50 border border-gray-100 p-5 rounded-2xl text-sm font-bold focus:ring-4 ring-purple-100 transition-all outline-none" placeholder="John Doe"></div>
+                                <div class="space-y-1.5"><label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label><input type="email" id="custEmail" class="w-full bg-white/50 border border-gray-100 p-5 rounded-2xl text-sm font-bold focus:ring-4 ring-purple-100 transition-all outline-none" placeholder="john@example.com"></div>
+                            </div>
+                            <div class="space-y-1.5"><label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label><input type="tel" id="custPhone" class="w-full bg-white/50 border border-gray-100 p-5 rounded-2xl text-sm font-bold focus:ring-4 ring-purple-100 transition-all outline-none" placeholder="+1 (555) 000-0000"></div>
+                            <div class="space-y-1.5"><label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Special Notes</label><textarea id="custNotes" class="w-full bg-white/50 border border-gray-100 p-5 rounded-2xl text-sm font-bold focus:ring-4 ring-purple-100 transition-all outline-none h-32" placeholder="Any special requests?"></textarea></div>
+                            
+                            <!-- Internal Summary -->
+                            <div class="bg-gray-50/50 rounded-[2rem] p-8 border border-gray-100 space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Booking For</p>
+                                    <p id="sum-price" class="text-3xl font-black text-gray-900 tracking-tighter">$0</p>
+                                </div>
+                                <p id="booking-summary" class="text-sm font-bold text-purple-600 uppercase tracking-tight">Service - Date at Time</p>
+                            </div>
+
+                            <button type="submit" class="w-full gradient-bg text-white font-black py-6 rounded-2xl text-sm transition-all hover:scale-[1.02] shadow-[0_20px_40px_-10px_rgba(168,85,247,0.4)] uppercase tracking-[0.2em]">Confirm Experience</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-20 border-t border-gray-100 pt-16 pb-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="w-12 h-12 gradient-bg rounded-2xl flex items-center justify-center text-white font-bold text-xl mx-auto mb-6 shadow-xl"> B </div>
+            <h3 class="font-bold text-xl tracking-tight text-gray-900 uppercase mb-2" id="footer-business-name">BookNow</h3>
+            <p id="footer-tagline" class="text-sm text-gray-400 mb-8 uppercase tracking-[0.2em] font-medium"></p>
+            <div class="flex justify-center space-x-8 mb-10">
+                <button onclick="showPage('booking')" class="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-purple-600 transition">Calendar</button>
+                <button onclick="showAdminLogin()" class="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-purple-600 transition">Admin Dashboard</button>
+            </div>
+            <p class="text-[10px] text-gray-300 font-black uppercase tracking-[0.4em]">Powered by Antigravity AI &bull; 2026</p>
+        </div>
+    </footer>
+
+    <!-- ADMIN PAGE - Now with unified styling -->
+    <div id="admin-page" class="page hidden min-h-screen pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-8 animate-slide-in">
+                <div>
+                    <h1 class="text-5xl font-black admin-text-primary tracking-tighter">Design <span class="text-purple-600">Suite</span></h1>
+                    <p class="admin-text-secondary mt-2 font-medium">Control your brand identity and studio operations.</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showPage('booking')" class="unified-card text-gray-900 border border-gray-200 px-8 py-3.5 rounded-2xl font-bold hover:scale-105 transition-all shadow-lg flex items-center">
+                        <i class="fas fa-external-link-alt mr-3"></i>View Live Site
+                    </button>
+                    <button onclick="logoutAdmin()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-8 py-3.5 rounded-2xl font-bold hover:bg-red-500 hover:text-white transition-all shadow-lg">
+                        <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid xl:grid-cols-4 lg:grid-cols-3 gap-8">
+                <!-- Side Panel -->
+                <div class="xl:col-span-1 space-y-8">
+                    <div class="unified-card rounded-3xl p-8 mb-8">
+                        <h3 class="text-lg font-bold admin-text-primary mb-6 uppercase tracking-widest flex items-center"><i class="fas fa-magic mr-3 text-purple-600"></i>Visual Branding</h3>
+                        <div class="space-y-6">
+                            <div class="space-y-3">
+                                <label class="text-xs font-bold admin-text-secondary uppercase tracking-widest pl-1">Global Color Scheme</label>
+                                <div class="relative">
+                                    <select id="admin-bus-theme" onchange="toggleCustomTheme(this.value)" class="w-full admin-input p-4 rounded-xl outline-none appearance-none cursor-pointer">
+                                        <option value="purple">Luxe Purple (Default)</option>
+                                        <option value="oceanic">Deep Oceanic</option>
+                                        <option value="golden">Golden Rose</option>
+                                        <option value="midnight">Sleek Midnight</option>
+                                        <option value="custom">✨ Fully Custom</option>
+                                    </select>
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none admin-text-secondary"><i class="fas fa-chevron-down"></i></div>
+                                </div>
+                            </div>
+
+                            <div id="custom-theme-controls" class="space-y-4 hidden animate-slide-in">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-1"><label class="text-[10px] font-bold admin-text-secondary uppercase">Primary Color</label><input type="color" id="color-primary" oninput="updateCustomTheme()" class="w-full h-10 bg-transparent border-none cursor-pointer"></div>
+                                    <div class="space-y-1"><label class="text-[10px] font-bold admin-text-secondary uppercase">Accent Color</label><input type="color" id="color-accent" oninput="updateCustomTheme()" class="w-full h-10 bg-transparent border-none cursor-pointer"></div>
+                                </div>
+                                <div class="space-y-1"><label class="text-[10px] font-bold admin-text-secondary uppercase">Global Background Color</label><input type="color" id="color-soft" oninput="updateCustomTheme()" class="w-full h-10 bg-transparent border-none cursor-pointer"></div>
+                            </div>
+                            <!-- Removed Theme Background Photo as requested -->
+
+                            <div class="flex justify-between items-center p-4 bg-white/50 rounded-2xl border border-gray-200">
+                                <span class="text-[10px] font-black admin-text-secondary uppercase">Palette Preview</span>
+                                <div class="flex -space-x-1.5">
+                                    <div class="swatch swatch-purple"></div>
+                                    <div class="swatch swatch-oceanic"></div>
+                                    <div class="swatch swatch-golden"></div>
+                                    <div class="swatch swatch-midnight"></div>
+                                </div>
+                            </div>
+                            <p class="text-[10px] admin-text-secondary uppercase font-black text-center tracking-tighter italic">Previewed instantly on current session. Click "Apply Changes" below to save.</p>
+                        </div>
+                    </div>
+
+                    <div class="unified-card rounded-3xl p-8"><h3 class="text-lg font-bold admin-text-primary mb-6 uppercase tracking-widest flex items-center"><i class="fas fa-building mr-3 text-purple-600"></i>Studio Info</h3>
+                        <form onsubmit="handleSaveBusiness(event)" class="space-y-4">
+                            <input type="text" id="admin-bus-name" class="w-full admin-input p-3 rounded-xl" placeholder="Business Name">
+                            <input type="text" id="admin-bus-tagline" class="w-full admin-input p-3 rounded-xl" placeholder="Tagline">
+                            <input type="text" id="admin-bus-address" class="w-full admin-input p-3 rounded-xl" placeholder="Address">
+                            <input type="text" id="admin-bus-phone" class="w-full admin-input p-3 rounded-xl" placeholder="Phone Number">
+                            <input type="text" id="admin-bus-email" class="w-full admin-input p-3 rounded-xl" placeholder="Contact Email">
+                            <input type="text" id="admin-bus-hours" class="w-full admin-input p-3 rounded-xl" placeholder="Availability / Business Hours">
+                            <input type="text" id="admin-bus-instagram" class="w-full admin-input p-3 rounded-xl" placeholder="Instagram URL">
+                            <input type="text" id="admin-bus-tiktok" class="w-full admin-input p-3 rounded-xl" placeholder="TikTok URL">
+                            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition">Apply Changes</button>
+                        </form>
+                    </div>
+                    <div class="unified-card rounded-3xl p-8"><h3 class="text-lg font-bold admin-text-primary mb-6 uppercase tracking-widest">Gallery Cloud</h3>
+                        <div id="upload-drop-zone" class="drop-zone border-purple-500/30 mb-6" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                            <i class="fas fa-cloud-upload-alt text-4xl mb-3 text-purple-600"></i><p class="admin-text-secondary text-sm">Drop Folder Here</p>
+                            <input type="file" id="folder-input" multiple webkitdirectory directory class="hidden" onchange="handleFileSelect(event)">
+                        </div>
+                        <div id="admin-gallery-preview" class="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar"></div>
+                    </div>
+                </div>
+
+                <!-- Main Panel -->
+                <div class="xl:col-span-3 lg:col-span-2 space-y-8">
+                    <!-- NEW: Google Calendar Integration -->
+                    <div class="unified-card rounded-3xl p-8 mb-8">
+                        <div class="flex justify-between items-center mb-8">
+                            <div>
+                                <h3 class="text-xl font-bold admin-text-primary uppercase tracking-widest flex items-center">
+                                    <i class="fab fa-google mr-3 text-blue-500"></i>Google Sync Suite
+                                </h3>
+                                <p class="admin-text-secondary text-[10px] mt-1 font-bold uppercase tracking-tight">Automated Availability Engine</p>
+                            </div>
+                            <span class="px-3 py-1 bg-blue-500/10 text-blue-600 text-[10px] font-black rounded-lg uppercase">Cloud Enabled</span>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="space-y-4">
+                                <div class="space-y-1.5"><label class="text-[10px] font-black admin-text-secondary uppercase tracking-[0.2em]">Google API Key</label><input type="password" id="admin-bus-google-key" class="w-full admin-input p-4 rounded-xl text-xs font-bold" placeholder="Paste your Google API Key"></div>
+                                <div class="space-y-1.5"><label class="text-[10px] font-black admin-text-secondary uppercase tracking-[0.2em]">Calendar ID</label><input type="text" id="admin-bus-calendar-id" class="w-full admin-input p-4 rounded-xl text-xs font-bold" placeholder="yourname@gmail.com"></div>
+                                <button onclick="handleSaveBusiness(event)" class="w-full gradient-bg text-white font-black py-4 rounded-xl text-[10px] transition-all hover:scale-[1.02] shadow-xl uppercase tracking-widest">Connect Calendar</button>
+                            </div>
+                            <div class="p-6 rounded-3xl bg-blue-500/5 border border-blue-200/20 space-y-4">
+                                <h4 class="text-[11px] font-bold text-blue-800 uppercase">How it works</h4>
+                                <ul class="space-y-3 text-[10px] admin-text-secondary leading-relaxed">
+                                    <li class="flex items-start"><i class="fas fa-check-circle text-blue-500 mt-0.5 mr-2"></i> Events on your Google Calendar will automatically block website slots.</li>
+                                    <li class="flex items-start"><i class="fas fa-check-circle text-blue-500 mt-0.5 mr-2"></i> New website bookings are saved locally.</li>
+                                    <li class="flex items-start"><i class="fas fa-info-circle text-blue-500 mt-0.5 mr-2"></i> Ensure your Google Calendar is shared as "Public" or as "See all event details".</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="unified-card rounded-3xl p-8">
+                        <div class="flex justify-between items-center mb-8"><h3 class="text-xl font-bold admin-text-primary uppercase tracking-widest">Active Services</h3><button onclick="openServiceModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-xl font-bold transition flex items-center"><i class="fas fa-plus mr-2"></i> New Service</button></div>
+                        <div id="admin-services-grid" class="grid md:grid-cols-2 gap-4"></div>
+                    </div>
+                    <div class="unified-card rounded-3xl p-8 overflow-hidden">
+                        <h3 class="text-xl font-bold admin-text-primary mb-8 uppercase tracking-widest">Recent Reservations</h3>
+                        <div class="overflow-x-auto"><table class="w-full text-left border-collapse"><thead class="admin-text-secondary text-sm uppercase tracking-wider border-b border-gray-200"><th class="pb-4 px-2">Customer</th><th class="pb-4">Service</th><th class="pb-4">Schedule</th><th class="pb-4">Status</th><th class="pb-4 text-right">Actions</th></thead><tbody id="admin-bookings-rows" class="admin-text-primary"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="service-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeServiceModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-8 w-full max-w-lg relative animate-slide-in">
+                <h3 id="service-modal-title" class="text-2xl font-bold mb-6">Manage Service</h3>
+                <form onsubmit="handleSaveService(event)" class="space-y-4">
+                    <input type="hidden" id="service-id">
+                    <div class="space-y-1"><label class="text-xs font-bold text-gray-400 uppercase">Service Name</label><input type="text" id="service-name" required class="w-full px-4 py-3 rounded-xl border-2 outline-none focus:border-purple-400"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1"><label class="text-xs font-bold text-gray-400 uppercase">Price ($)</label><input type="number" id="service-price" required class="w-full px-4 py-3 rounded-xl border-2 outline-none focus:border-purple-400"></div>
+                        <div class="space-y-1"><label class="text-xs font-bold text-gray-400 uppercase">Duration (min)</label><input type="number" id="service-duration" required class="w-full px-4 py-3 rounded-xl border-2 outline-none focus:border-purple-400"></div>
+                    </div>
+                    <div class="space-y-1"><label class="text-xs font-bold text-gray-400 uppercase">Description</label><textarea id="service-desc" rows="3" class="w-full px-4 py-3 rounded-xl border-2 outline-none focus:border-purple-400"></textarea></div>
+                    <div class="flex space-x-4 pt-4"><button type="submit" class="flex-1 gradient-bg text-white font-bold py-3 rounded-xl hover:opacity-90 transition">Save Changes</button><button type="button" onclick="closeServiceModal()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition">Cancel</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="booking-details-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeBookingModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-8 w-full max-w-md relative animate-slide-in text-gray-800">
+                <h3 class="text-2xl font-bold mb-6 border-b pb-4">Reservation Details</h3>
+                <div id="modal-booking-content" class="space-y-4"></div>
+                <div class="mt-8 pt-4 border-t flex flex-wrap gap-2" id="modal-booking-actions"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-login-modal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeAdminLogin()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-10 w-full max-w-md relative animate-slide-in shadow-2xl">
+                <div class="text-center mb-8"><div class="w-20 h-20 gradient-bg rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg rotate-3"><i class="fas fa-shield-alt text-white text-3xl"></i></div><h3 class="text-3xl font-bold text-gray-900 tracking-tight">Access Control</h3><p class="text-gray-500 text-sm mt-1">Authorized personnel only.</p></div>
+                <form onsubmit="handleAdminLogin(event)" class="space-y-6">
+                    <input type="password" id="admin-password-input" required class="w-full px-6 py-4 rounded-2xl border-2 border-gray-100 outline-none focus:border-purple-400 text-center text-2xl tracking-widest bg-gray-50" placeholder="••••">
+                    <button type="submit" class="w-full gradient-bg text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all text-lg uppercase tracking-wider">Unlock Dashboard</button>
+                    <button type="button" onclick="closeAdminLogin()" class="w-full text-gray-400 text-sm font-bold uppercase tracking-widest hover:text-gray-600 transition">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-modal" class="fixed inset-0 z-[110] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white p-10 rounded-[3rem] text-center max-w-sm relative animate-slide-in shadow-[0_64px_128px_-12px_rgba(0,0,0,0.5)]">
+                <div class="w-24 h-24 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner"><i class="fas fa-check-circle text-4xl"></i></div>
+                <h3 class="text-3xl font-black mb-3 tracking-tight font-heading uppercase">Reserved!</h3>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-8 leading-relaxed">Your experience is locked in.<br>Stay ahead of schedule.</p>
+                <div class="space-y-4">
+                    <a id="gcal-btn" href="#" target="_blank" class="w-full flex items-center justify-center bg-white border border-gray-100 text-gray-900 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-gray-50 hover:scale-[1.02] transition-all">
+                        <i class="fab fa-google mr-3 text-blue-500 scale-125"></i> Add to Google Calendar
+                    </a>
+                    <button onclick="closeSuccessModal()" class="w-full gradient-bg text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl hover:scale-[1.02] transition-all">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="crop-modal" class="fixed inset-0 z-[110] hidden">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white p-8 rounded-[2rem] w-full max-w-2xl relative animate-slide-in shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)]">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h3 class="text-xl font-black tracking-widest uppercase">Crop Image <span id="crop-queue-text" class="text-purple-600 ml-2"></span></h3>
+                    <button onclick="skipCrop()" class="text-gray-400 hover:text-red-500 font-bold uppercase text-[10px] tracking-widest transition">Skip / Cancel</button>
+                </div>
+                <div class="w-full h-[400px] bg-gray-100 rounded-2xl overflow-hidden mb-6 flex items-center justify-center relative">
+                    <img id="cropper-img" src="" class="max-w-full max-h-full">
+                </div>
+                <button onclick="saveCrop()" class="w-full gradient-bg text-white font-black py-4 rounded-xl text-xs transition-all hover:scale-[1.02] shadow-xl uppercase tracking-widest"><i class="fas fa-crop-alt mr-2"></i> Save Crop & Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX (MODEL) -->
+    <div id="lightbox-modal" class="lightbox-modal">
+        <button onclick="closeLightbox()" class="absolute top-8 right-8 text-white text-4xl hover:text-purple-400 p-4 z-[120] transition"><i class="fas fa-times"></i></button>
+        <button onclick="changeLightboxImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-5xl p-6 z-[120] transition"><i class="fas fa-chevron-left"></i></button>
+        <div class="lightbox-content relative z-[110] animate-slide-in">
+            <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] rounded-3xl shadow-2xl border-4 border-white/10">
+        </div>
+        <button onclick="changeLightboxImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-5xl p-6 z-[120] transition"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script>
+        let currentDate = new Date(), selectedDate = null, selectedService = null, selectedTime = null, currentCarouselIndex = 0, currentLightboxIndex = 0;
+        let adminCurrentDate = new Date(), adminSelectedDate = null;
+        let busData = {}, services = [], gallery = [], bookings = [], blockedSlots = [];
+        const ALL_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+
+        async function api(path, method = 'GET', body = null) {
+            try {
+                const opts = { method, headers: { 'Content-Type': 'application/json' } };
+                if (body) opts.body = JSON.stringify(body);
+                const res = await fetch(path, opts);
+                if (!res.ok) throw new Error(res.statusText);
+                return await res.json();
+            } catch (e) {
+                showNotification(e.message, 'error');
+                return { error: true, message: e.message };
+            }
+        }
+
+        async function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`${page}-page`).classList.remove('hidden');
+            if (page === 'admin') { 
+                if (!sessionStorage.getItem('adminAuth')) { showAdminLogin(); return; } 
+                loadAdminData(); 
+            } else { 
+                loadBookingData(); 
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function showAdminLogin() { document.getElementById('admin-login-modal').classList.remove('hidden'); }
+        function closeAdminLogin() { document.getElementById('admin-login-modal').classList.add('hidden'); }
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const res = await api('/api/admin/login', 'POST', { password: document.getElementById('admin-password-input').value });
+            if (res.success) { sessionStorage.setItem('adminAuth', 'true'); closeAdminLogin(); showPage('admin'); }
+            else showNotification('Unauthorized', 'error');
+        }
+        function logoutAdmin() { sessionStorage.removeItem('adminAuth'); showPage('booking'); }
+
+        async function loadBookingData() {
+            const [b, s, g, avail, bks] = await Promise.all([api('/api/business'), api('/api/services'), api('/api/gallery'), api('/api/availability'), api('/api/bookings')]);
+            busData = b; services = s; gallery = g; blockedSlots = avail; bookings = bks;
+            applyTheme(b.theme);
+            updateSiteUI();
+        }
+
+        function applyTheme(theme) {
+            document.body.classList.remove('theme-oceanic', 'theme-golden', 'theme-midnight');
+            
+            if (theme === 'custom') {
+                const root = document.documentElement;
+                root.style.setProperty('--primary-accent', busData.customAccent || '#764ba2');
+                root.style.setProperty('--primary-gradient', `linear-gradient(135deg, ${busData.customPrimary || '#667eea'} 0%, ${busData.customAccent || '#764ba2'} 100%)`);
+                root.style.setProperty('--primary-soft', busData.customSoft || '#f5f3ff');
+                root.style.setProperty('--global-bg', busData.customSoft || '#f9fafb');
+                root.style.setProperty('--card-bg', `rgba(${hexToRgb(busData.customSoft || '#ffffff')}, 0.8)`);
+                requestAnimationFrame(() => enforceWCAGContrast());
+            } else {
+                const root = document.documentElement;
+                ['--primary-accent', '--primary-gradient', '--primary-soft', '--global-bg', '--card-bg', '--text-primary'].forEach(p => root.style.removeProperty(p));
+                if (theme && theme !== 'purple') document.body.classList.add(`theme-${theme}`);
+                requestAnimationFrame(() => requestAnimationFrame(() => enforceWCAGContrast()));
+            }
+
+            // Remove Background Photo logic - always keep it clean as requested
+            document.body.style.backgroundImage = 'none';
+        }
+
+        function hexToRgb(hex) {
+            let r = 0, g = 0, b = 0;
+            if (hex.length === 4) {
+                r = parseInt(hex[1] + hex[1], 16);
+                g = parseInt(hex[2] + hex[2], 16);
+                b = parseInt(hex[3] + hex[3], 16);
+            } else if (hex.length === 7) {
+                r = parseInt(hex.slice(1, 3), 16);
+                g = parseInt(hex.slice(3, 5), 16);
+                b = parseInt(hex.slice(5, 7), 16);
+            }
+            return `${r}, ${g}, ${b}`;
+        }
+
+        // ═══════════════════════════════════════════════════
+        // WCAG Intelligent Color Adaptation Engine
+        // Ensures contrast ratios meet WCAG 2.1 AA thresholds
+        // 4.5:1 for normal text, 3:1 for large/heading text
+        // ═══════════════════════════════════════════════════
+
+        function hexToRgbObj(hex) {
+            const h = hex.replace('#','');
+            if (h.length === 3) {
+                return { r: parseInt(h[0]+h[0],16), g: parseInt(h[1]+h[1],16), b: parseInt(h[2]+h[2],16) };
+            }
+            return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+        }
+
+        function rgbToHex({r,g,b}) {
+            return '#' + [r,g,b].map(v => Math.round(Math.min(255,Math.max(0,v))).toString(16).padStart(2,'0')).join('');
+        }
+
+        function relativeLuminance({r,g,b}) {
+            const srgb = [r,g,b].map(c => {
+                const s = c / 255;
+                return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+        }
+
+        function contrastRatio(hex1, hex2) {
+            const l1 = relativeLuminance(hexToRgbObj(hex1));
+            const l2 = relativeLuminance(hexToRgbObj(hex2));
+            const lighter = Math.max(l1, l2);
+            const darker  = Math.min(l1, l2);
+            return (lighter + 0.05) / (darker + 0.05);
+        }
+
+        function rgbToHsl({r,g,b}) {
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r,g,b), min = Math.min(r,g,b);
+            let h, s, l = (max + min) / 2;
+            if (max === min) { h = s = 0; }
+            else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch(max) {
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+            return { h: h * 360, s: s * 100, l: l * 100 };
+        }
+
+        function hslToHex(h, s, l) {
+            h /= 360; s /= 100; l /= 100;
+            let r, g, b;
+            if (s === 0) { r = g = b = l; }
+            else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            return rgbToHex({ r: r*255, g: g*255, b: b*255 });
+        }
+
+        /**
+         * Adapts a foreground hex color so it meets WCAG contrast
+         * against the given background hex. Adjusts lightness only.
+         * @param {string} fg - foreground hex (text/accent color)
+         * @param {string} bg - background hex
+         * @param {number} threshold - 4.5 (normal text) or 3 (large text)
+         * @returns {string} WCAG-compliant hex color
+         */
+        function ensureContrast(fg, bg, threshold = 4.5) {
+            if (!fg || !bg || fg.length < 4 || bg.length < 4) return fg;
+            if (contrastRatio(fg, bg) >= threshold) return fg; // Already compliant
+
+            const bgLum = relativeLuminance(hexToRgbObj(bg));
+            const { h, s, l } = rgbToHsl(hexToRgbObj(fg));
+
+            // Decide direction: if bg is dark, lighten fg; if bg is light, darken fg
+            const shouldLighten = bgLum < 0.5;
+            let adjustedL = l;
+
+            for (let i = 0; i < 100; i++) {
+                adjustedL = shouldLighten
+                    ? Math.min(100, adjustedL + 1)
+                    : Math.max(0, adjustedL - 1);
+                const candidate = hslToHex(h, s, adjustedL);
+                if (contrastRatio(candidate, bg) >= threshold) return candidate;
+                // If we've hit the extreme and still not compliant, flip direction
+                if (adjustedL === 100 || adjustedL === 0) break;
+            }
+
+            // Fallback: try the opposite direction
+            adjustedL = l;
+            for (let i = 0; i < 100; i++) {
+                adjustedL = shouldLighten
+                    ? Math.max(0, adjustedL - 1)
+                    : Math.min(100, adjustedL + 1);
+                const candidate = hslToHex(h, s, adjustedL);
+                if (contrastRatio(candidate, bg) >= threshold) return candidate;
+                if (adjustedL === 0 || adjustedL === 100) break;
+            }
+
+            return fg; // Return original if no solution found
+        }
+
+        /**
+         * Reads computed CSS variables after a theme is applied and
+         * auto-corrects any color pairs that fail WCAG contrast.
+         * Only called for custom themes and preset enforcement.
+         */
+        function enforceWCAGContrast() {
+            const style = getComputedStyle(document.documentElement);
+            const body  = getComputedStyle(document.body);
+
+            // Helper: resolve a CSS variable to hex
+            const getVar = (name) => {
+                const val = (style.getPropertyValue(name) || body.getPropertyValue(name)).trim();
+                return cssColorToHex(val);
+            };
+
+            const bg     = getVar('--global-bg')   || '#f9fafb';
+            const accent = getVar('--primary-accent') || '#764ba2';
+            const card   = cssColorToHex(body.backgroundColor) || bg;
+
+            // Fix accent text on page background (large text: 3:1)
+            const fixedAccent = ensureContrast(accent, bg, 3);
+            // Fix accent text on card background (normal text: 4.5:1)
+            const fixedAccentOnCard = ensureContrast(fixedAccent, card === 'transparent' ? bg : card, 4.5);
+
+            if (fixedAccentOnCard !== accent) {
+                document.documentElement.style.setProperty('--primary-accent', fixedAccentOnCard);
+                // Also rebuild the gradient with the corrected accent
+                const existing = style.getPropertyValue('--primary-gradient').trim();
+                if (existing && existing.includes('135deg')) {
+                    // Extract first color stop and rebuild
+                    const match = existing.match(/#[0-9a-fA-F]{3,6}|rgba?\([^)]+\)/);
+                    if (match) {
+                        document.documentElement.style.setProperty(
+                            '--primary-gradient',
+                            `linear-gradient(135deg, ${match[0]} 0%, ${fixedAccentOnCard} 100%)`
+                        );
+                    }
+                }
+            }
+
+            // Ensure primary text is readable on background
+            const textOnBg = '#111827';
+            const textFixed = ensureContrast(textOnBg, bg, 4.5);
+            if (textFixed !== textOnBg) {
+                document.documentElement.style.setProperty('--text-primary', textFixed);
+            }
+        }
+
+        /**
+         * Parses any CSS color string and returns a hex equivalent.
+         * Handles: hex, rgb(), rgba(), named colors via canvas trick.
+         */
+        function cssColorToHex(color) {
+            if (!color || color === 'transparent' || color === 'none') return null;
+            if (color.startsWith('#')) return color;
+            if (color.startsWith('rgb')) {
+                const parts = color.match(/[\d.]+/g);
+                if (parts && parts.length >= 3) {
+                    return rgbToHex({ r: +parts[0], g: +parts[1], b: +parts[2] });
+                }
+            }
+            // Canvas fallback for named colors
+            try {
+                const c = document.createElement('canvas');
+                c.width = c.height = 1;
+                const ctx = c.getContext('2d');
+                ctx.fillStyle = color;
+                ctx.fillRect(0,0,1,1);
+                const [r,g,b] = ctx.getImageData(0,0,1,1).data;
+                return rgbToHex({r,g,b});
+            } catch(e) { return null; }
+        }
+
+        function toggleCustomTheme(theme) {
+            document.getElementById('custom-theme-controls').classList.toggle('hidden', theme !== 'custom');
+            if (theme !== 'custom') applyTheme(theme);
+            else updateCustomTheme();
+        }
+
+        function updateCustomTheme() {
+            busData.customPrimary = document.getElementById('color-primary').value;
+            busData.customAccent = document.getElementById('color-accent').value;
+            busData.customSoft = document.getElementById('color-soft').value;
+            applyTheme('custom');
+        }
+
+        let currentStep = 1;
+
+        function updateSiteUI() {
+            document.getElementById('nav-business-name').textContent = busData.name;
+            document.getElementById('hero-title').textContent = busData.name;
+            document.getElementById('hero-subtitle').textContent = busData.tagline;
+            document.getElementById('sum-phone-info').textContent = busData.phone;
+            document.getElementById('sum-address').textContent = busData.address;
+            document.getElementById('sum-hours').textContent = busData.hours;
+            document.getElementById('instagram-link').href = busData.instagram || '#';
+            document.getElementById('tiktok-link').href = busData.tiktok || '#';
+            document.getElementById('side-instagram').href = busData.instagram || '#';
+            document.getElementById('side-tiktok').href = busData.tiktok || '#';
+            document.getElementById('footer-business-name').textContent = busData.name;
+            document.getElementById('footer-tagline').textContent = busData.tagline;
+
+            // Gallery Grid
+            const container = document.getElementById('gallery-grid');
+            container.innerHTML = (gallery || []).map((img, idx) => `
+                <div class="flex-none w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[350px] aspect-square gallery-item snap-center rounded-[2rem] overflow-hidden floating-art cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-transform" onclick="openLightbox('${img}')">
+                    <img src="${img}" class="w-full h-full object-cover" alt="Studio ${idx}">
+                </div>
+            `).join('');
+
+            // Initialization for Autoplay
+            setTimeout(() => {
+                startAutoplay();
+            }, 500);
+
+            
+            // Service List
+            document.getElementById('service-grid').innerHTML = services.map(s => {
+                const escapedName = s.name.replace(/'/g, "\\'");
+                const isActive = selectedService?.id === s.id;
+                return `
+                <div onclick="selectService(${s.id},'${escapedName}',${s.price})" class="group glass p-6 rounded-3xl border ${isActive ? 'border-purple-600 ring-2 ring-purple-100' : 'border-white/50'} cursor-pointer transition-all hover:shadow-xl service-card" id="svc-${s.id}">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-black text-gray-900 uppercase tracking-tight">${s.name}</h4>
+                        <span class="text-xs font-black text-purple-600">$${s.price}</span>
+                    </div>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center"><i class="fas fa-clock mr-2 opacity-50"></i>${s.duration} MIN</p>
+                </div>
+            `}).join('');
+            
+            renderCalendar();
+        }
+
+        function selectService(id, name, price) {
+            selectedService = { id, name, price };
+            selectedTime = null;
+            document.getElementById('sum-price').textContent = `$${price}`;
+            document.getElementById('booking-summary').textContent = `${name} - Select Date & Time`;
+            
+            // Highlight service card manually for instant feedback
+            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('border-purple-600', 'ring-2', 'ring-purple-100'));
+            const card = document.getElementById(`svc-${id}`);
+            if (card) card.classList.add('border-purple-600', 'ring-2', 'ring-purple-100');
+            
+            // Reset down-funnel areas
+            document.getElementById('time-selection-area').classList.add('hidden');
+            document.getElementById('booking-form-area').classList.add('hidden');
+            
+        }
+
+        function selectDate(y, m, d) {
+            if (!selectedService) return showNotification('Please select an experience first', 'error');
+            selectedDate = new Date(y, m, d);
+            selectedTime = null;
+            document.getElementById('display-date').textContent = selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            document.getElementById('time-selection-area').classList.remove('hidden');
+            document.getElementById('booking-form-area').classList.add('hidden');
+            
+            renderCalendar();
+            renderTimeSlots();
+            
+            window.scrollTo({ top: document.getElementById('time-selection-area').offsetTop - 100, behavior: 'smooth' });
+        }
+
+
+        async function loadAdminData() {
+            const [b, s, g, book, avail] = await Promise.all([api('/api/business'), api('/api/services'), api('/api/gallery'), api('/api/bookings'), api('/api/availability')]);
+            busData = b; services = s; gallery = g; bookings = book; blockedSlots = avail;
+
+            // Fill business form
+            document.getElementById('admin-bus-name').value = b.name;
+            document.getElementById('admin-bus-tagline').value = b.tagline;
+            document.getElementById('admin-bus-address').value = b.address;
+            document.getElementById('admin-bus-phone').value = b.phone;
+            document.getElementById('admin-bus-email').value = b.email;
+            document.getElementById('admin-bus-hours').value = b.hours;
+            document.getElementById('admin-bus-instagram').value = b.instagram;
+            document.getElementById('admin-bus-tiktok').value = b.tiktok;
+            document.getElementById('admin-bus-theme').value = b.theme || 'purple';
+            document.getElementById('color-primary').value = b.customPrimary || '#667eea';
+            document.getElementById('color-accent').value = b.customAccent || '#764ba2';
+            document.getElementById('color-soft').value = b.customSoft || '#f9fafb';
+            toggleCustomTheme(b.theme || 'purple');
+            applyTheme(b.theme);
+
+            // Render services - using unified styling
+            document.getElementById('admin-services-grid').innerHTML = s.map(sv => `
+                <div class="unified-card border border-gray-200 p-5 rounded-2xl flex justify-between items-start group hover:border-purple-500/50 transition">
+                    <div><b class="admin-text-primary block mb-1">${sv.name}</b><p class="admin-text-secondary text-sm">$${sv.price} • ${sv.duration}m</p></div>
+                    <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition"><button onclick="openServiceModal(${sv.id})" class="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg"><i class="fas fa-edit"></i></button><button onclick="deleteService(${sv.id})" class="p-2 text-red-500 hover:bg-red-500/10 rounded-lg"><i class="fas fa-trash"></i></button></div>
+                </div>`).join('');
+
+            // Render gallery preview
+            document.getElementById('admin-gallery-preview').innerHTML = g.map(url => `
+                <div class="relative rounded-xl overflow-hidden group h-24 shadow-md"><img src="${url}" class="w-full h-full object-cover"><button onclick="deleteGalleryImage('${url}')" class="absolute inset-0 bg-red-600/80 text-white opacity-0 group-hover:opacity-100 transition flex items-center justify-center font-bold text-xs uppercase tracking-widest">Delete</button></div>`).join('');
+
+            // Render Bookings - using unified styling
+            const statusClass = (s) => ({"confirmed":"bg-green-500/10 text-green-600", "completed":"bg-blue-500/10 text-blue-600", "cancelled":"bg-red-500/10 text-red-600", "pending":"bg-yellow-500/10 text-yellow-600"}[s] || "bg-gray-500/10 text-gray-600");
+            document.getElementById('admin-bookings-rows').innerHTML = book.map(bk => `
+                <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer" onclick="openBookingModal(${bk.id})">
+                    <td class="py-4 px-2 font-bold admin-text-primary">${bk.customerName}</td>
+                    <td class="py-4 font-medium admin-text-secondary">${bk.serviceName}</td>
+                    <td class="py-4 text-sm admin-text-secondary">${bk.date} @ ${bk.time}</td>
+                    <td class="py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${statusClass(bk.status)}">${bk.status || 'pending'}</span></td>
+                    <td class="py-4 text-right"><i class="fas fa-chevron-right text-xs opacity-20"></i></td>
+                </tr>`).join('');
+
+            document.getElementById('admin-bus-google-key').value = b.googleApiKey || '';
+            document.getElementById('admin-bus-calendar-id').value = b.googleCalendarId || '';
+        }
+
+        async function fetchGoogleEvents(date) {
+            if (!busData.googleApiKey || !busData.googleCalendarId) return [];
+            const d = new Date(date);
+            const timeMin = new Date(d.setHours(0,0,0,0)).toISOString();
+            const timeMax = new Date(d.setHours(23,59,59,999)).toISOString();
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(busData.googleCalendarId)}/events?key=${busData.googleApiKey}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true`;
+            try {
+                const res = await (await fetch(url)).json();
+                return res.items || [];
+            } catch (e) { console.error('GCal Error', e); return []; }
+        }
+
+        // Admin Actions
+        async function handleSaveBusiness(e) {
+            e.preventDefault();
+            const body = {
+                name: document.getElementById('admin-bus-name').value,
+                tagline: document.getElementById('admin-bus-tagline').value,
+                address: document.getElementById('admin-bus-address').value,
+                phone: document.getElementById('admin-bus-phone').value,
+                email: document.getElementById('admin-bus-email').value,
+                hours: document.getElementById('admin-bus-hours').value,
+                instagram: document.getElementById('admin-bus-instagram').value,
+                tiktok: document.getElementById('admin-bus-tiktok').value,
+                theme: document.getElementById('admin-bus-theme').value,
+                bgImage: '',
+                googleApiKey: document.getElementById('admin-bus-google-key').value,
+                googleCalendarId: document.getElementById('admin-bus-calendar-id').value,
+                customPrimary: document.getElementById('color-primary').value,
+                customAccent: document.getElementById('color-accent').value,
+                customSoft: document.getElementById('color-soft').value
+            };
+            const res = await api('/api/business', 'POST', body);
+            if (res.success) { showNotification('Settings Updated', 'success'); loadAdminData(); }
+        }
+
+        function openServiceModal(id = null) {
+            const sv = id ? services.find(s => s.id === id) : { id: '', name: '', price: '', duration: '', description: '' };
+            document.getElementById('service-modal-title').textContent = id ? 'Modify Service' : 'New Service Offering';
+            document.getElementById('service-id').value = sv.id;
+            document.getElementById('service-name').value = sv.name;
+            document.getElementById('service-price').value = sv.price;
+            document.getElementById('service-duration').value = sv.duration;
+            document.getElementById('service-desc').value = sv.description || '';
+            document.getElementById('service-modal').classList.remove('hidden');
+        }
+        function closeServiceModal() { document.getElementById('service-modal').classList.add('hidden'); }
+        async function handleSaveService(e) {
+            e.preventDefault();
+            const id = document.getElementById('service-id').value;
+            const body = {
+                name: document.getElementById('service-name').value,
+                price: document.getElementById('service-price').value,
+                duration: document.getElementById('service-duration').value,
+                description: document.getElementById('service-desc').value
+            };
+            const path = id ? `/api/services/${id}` : '/api/services';
+            const res = await api(path, id ? 'PUT' : 'POST', body);
+            if (res.success) { showNotification('Service Updated', 'success'); closeServiceModal(); loadAdminData(); }
+        }
+        async function deleteService(id) {
+            if(!confirm('Delete this service permanently?')) return;
+            const res = await api(`/api/services/${id}`, 'DELETE');
+            if (res.success) { showNotification('Service Removed', 'success'); loadAdminData(); }
+        }
+
+        function openBookingModal(id) {
+            const bk = bookings.find(b => b.id === id);
+            document.getElementById('modal-booking-content').innerHTML = `
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><b>Name:</b><br>${bk.customerName}</div>
+                    <div><b>Service:</b><br>${bk.serviceName}</div>
+                    <div><b>Schedule:</b><br>${bk.date} @ ${bk.time}</div>
+                    <div><b>Total:</b><br>$${bk.servicePrice}</div>
+                    <div class="col-span-2"><b>Contact:</b><br>📧 ${bk.customerEmail}<br>📞 ${bk.customerPhone}</div>
+                    <div class="col-span-2"><b>Notes:</b><br>${bk.notes || 'No special notes provided.'}</div>
+                </div>
+            `;
+            const buttons = [
+                { s: 'confirmed', t: 'Confirm', b: 'bg-green-500' },
+                { s: 'completed', t: 'Complete', b: 'bg-blue-500' },
+                { s: 'cancelled', t: 'Cancel', b: 'bg-red-500' }
+            ].map(btn => `<button onclick="updateStatus(${bk.id}, '${btn.s}')" class="flex-1 ${btn.b} text-white px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider">${btn.t}</button>`).join('');
+            document.getElementById('modal-booking-actions').innerHTML = buttons + `<button onclick="deleteBooking(${bk.id})" class="flex-1 bg-gray-900 text-white px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider">Delete Entry</button>`;
+            document.getElementById('booking-details-modal').classList.remove('hidden');
+        }
+        function closeBookingModal() { document.getElementById('booking-details-modal').classList.add('hidden'); }
+        async function updateStatus(id, s) {
+            const res = await api(`/api/bookings/${id}`, 'PUT', { status: s });
+            if (res.success) { showNotification(`Booking ${s}`, 'success'); closeBookingModal(); loadAdminData(); }
+        }
+        async function deleteBooking(id) {
+            if(!confirm('Delete this record?')) return;
+            const res = await api(`/api/bookings/${id}`, 'DELETE');
+            if (res.success) { showNotification('Record Deleted', 'success'); closeBookingModal(); loadAdminData(); }
+        }
+
+        async function deleteGalleryImage(url) {
+            const res = await api('/api/gallery', 'DELETE', { url });
+            if (res.success) { showNotification('Image Removed', 'info'); loadAdminData(); }
+        }
+
+        // Drop Zone Handlers
+        document.getElementById('upload-drop-zone').onclick = () => document.getElementById('folder-input').click();
+        function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('bg-purple-50', 'border-purple-600', 'scale-[1.02]'); }
+        function handleDragLeave(e) { e.currentTarget.classList.remove('bg-purple-50', 'border-purple-600', 'scale-[1.02]'); }
+        async function handleDrop(e) {
+            e.preventDefault(); e.currentTarget.classList.remove('bg-purple-50', 'border-purple-600', 'scale-[1.02]');
+            const files = []; for (let it of e.dataTransfer.items) { const en = it.webkitGetAsEntry(); if (en) await traverse(en, files); }
+            startCropping(files);
+        }
+        async function traverse(en, files) {
+            if (en.isFile) { const f = await new Promise(r => en.file(r)); if(f.type.startsWith('image/')) files.push(f); }
+            else if (en.isDirectory) { const reader = en.createReader(); const entries = await new Promise(r => reader.readEntries(r)); for(let e of entries) await traverse(e, files); }
+        }
+        function handleFileSelect(e) { startCropping(Array.from(e.target.files).filter(f => f.type.startsWith('image/'))); }
+        
+        // Image Cropping Engine
+        let cropQueue = [];
+        let currentCropper = null;
+
+        function startCropping(files) {
+            if (!files.length) return;
+            cropQueue = files.map(f => ({ file: f, url: URL.createObjectURL(f) }));
+            showCropModal();
+        }
+
+        function showCropModal() {
+            if (cropQueue.length === 0) return;
+            const item = cropQueue[0];
+            document.getElementById('cropper-img').src = item.url;
+            document.getElementById('crop-modal').classList.remove('hidden');
+            if (currentCropper) currentCropper.destroy();
+            
+            // Allow cropper image load
+            setTimeout(() => {
+                currentCropper = new Cropper(document.getElementById('cropper-img'), {
+                    aspectRatio: 1, // 4x4 Square Ratio
+                    viewMode: 1,
+                    background: false,
+                    autoCropArea: 1,
+                    dragMode: 'move'
+                });
+                document.getElementById('crop-queue-text').textContent = `( 1 of ${cropQueue.length} )`;
+            }, 100);
+        }
+
+        async function saveCrop() {
+            if (!currentCropper) return;
+            const saveBtn = event.currentTarget;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+            saveBtn.disabled = true;
+
+            currentCropper.getCroppedCanvas({ width: 800, height: 800, fillColor: '#fff' }).toBlob(async (blob) => {
+                const item = cropQueue.shift();
+                const file = new File([blob], item.file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' });
+                const fd = new FormData();
+                fd.append('images', file);
+                
+                showNotification(`Optimizing and uploading crop...`, 'info');
+                await fetch('/api/upload', { method: 'POST', body: fd });
+                URL.revokeObjectURL(item.url); // Memory cleanup
+                
+                saveBtn.innerHTML = '<i class="fas fa-crop-alt mr-2"></i> Save Crop & Upload';
+                saveBtn.disabled = false;
+
+                if (cropQueue.length > 0) {
+                    showCropModal();
+                } else {
+                    document.getElementById('crop-modal').classList.add('hidden');
+                    currentCropper.destroy();
+                    currentCropper = null;
+                    showNotification('All images cropped & uploaded', 'success');
+                    loadAdminData();
+                }
+            }, 'image/jpeg', 0.9);
+        }
+        
+        function skipCrop() {
+            const item = cropQueue.shift();
+            URL.revokeObjectURL(item.url);
+            if (cropQueue.length > 0) {
+                showCropModal();
+            } else {
+                document.getElementById('crop-modal').classList.add('hidden');
+                if (currentCropper) currentCropper.destroy();
+                currentCropper = null;
+                showNotification('Upload session finished', 'info');
+                loadAdminData();
+            }
+        }
+
+
+        // Site Interactions
+        function changeMonth(v) { currentDate.setMonth(currentDate.getMonth() + v); renderCalendar(); }
+        function renderCalendar() {
+            const y = currentDate.getFullYear(), m = currentDate.getMonth();
+            document.getElementById('current-month').textContent = new Date(y,m).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+            const first = new Date(y,m,1).getDay(), days = new Date(y,m+1,0).getDate();
+            let html = '';
+            for(let i=0; i<first; i++) html += '<div></div>';
+            for(let d=1; d<=days; d++) {
+                const active = selectedDate?.getDate()===d && selectedDate?.getMonth()===m && selectedDate?.getFullYear()===y;
+                html += `<div class="p-3 text-center rounded-2xl cursor-pointer font-bold transition-all ${active ? 'gradient-bg text-white shadow-lg' : 'hover:bg-purple-50 text-gray-700'}" onclick="selectDate(${y},${m},${d})">${d}</div>`;
+            }
+            document.getElementById('calendar-grid').innerHTML = html;
+        }
+        async function renderTimeSlots() {
+            if (!selectedDate) return;
+            const ds = selectedDate.toLocaleDateString();
+            
+            // Check GCal
+            const events = await fetchGoogleEvents(selectedDate);
+            const isFullDayBlocked = blockedSlots.some(s => s.date === ds && s.time === 'ALL');
+
+            document.getElementById('time-slots').innerHTML = ALL_SLOTS.map(t => {
+                const slotTime = new Date(selectedDate);
+                const [h, m] = t.split(':'); slotTime.setHours(h, m, 0, 0);
+                
+                const isConflict = events.some(e => {
+                    const start = new Date(e.start.dateTime || e.start.date);
+                    const end = new Date(e.end.dateTime || e.end.date);
+                    return slotTime >= start && slotTime < end;
+                });
+
+                const isBlocked = isFullDayBlocked || isConflict || blockedSlots.some(s => s.date === ds && s.time === t);
+                const isBooked = bookings.some(b => b.date === ds && b.time === t && b.status !== 'cancelled');
+                
+                if (isBlocked || isBooked) {
+                    return `<div class="p-3 border-2 border-gray-50 bg-gray-50 rounded-2xl text-center font-bold text-gray-300 cursor-not-allowed opacity-50 relative">
+                        ${t}
+                        <span class="absolute -top-2 -right-1 bg-white px-1 text-[8px] uppercase tracking-tighter rounded border border-gray-200">${isBooked ? 'Booked' : 'N/A'}</span>
+                    </div>`;
+                }
+                return `<div class="p-3 border-2 border-gray-100 rounded-2xl text-center cursor-pointer font-bold hover:border-purple-600 hover:text-purple-600 transition time-slot-btn" onclick="selectTime(event, '${t}')">${t}</div>`;
+            }).join('');
+        }
+
+
+        function selectTime(e, time) {
+            selectedTime = time;
+            document.querySelectorAll('.time-slot-btn').forEach(el => el.classList.remove('slot-selected', 'border-transparent'));
+            e.currentTarget.classList.add('slot-selected', 'border-transparent');
+            
+            document.getElementById('sum-price').textContent = `$${selectedService.price}`;
+            document.getElementById('booking-summary').textContent = `${selectedService.name} - ${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} @ ${time}`;
+            document.getElementById('booking-form-area').classList.remove('hidden');
+            
+            window.scrollTo({ top: document.getElementById('booking-form-area').offsetTop - 100, behavior: 'smooth' });
+        }
+
+        async function handleBooking(e) {
+            if (e) e.preventDefault();
+            const name = document.getElementById('custName').value;
+            const email = document.getElementById('custEmail').value;
+            const phone = document.getElementById('custPhone').value;
+            const notes = document.getElementById('custNotes').value;
+
+            if (!name || !email || !phone) return showNotification('Please fill all credentials', 'error');
+
+            const bookingData = {
+                serviceId: selectedService.id,
+                serviceName: selectedService.name,
+                servicePrice: selectedService.price,
+                customerName: name,
+                customerEmail: email,
+                customerPhone: phone,
+                notes,
+                date: selectedDate.toLocaleDateString(),
+                time: selectedTime,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+
+            showNotification('Securing Appointment...', 'info');
+            const res = await api('/api/bookings', 'POST', bookingData);
+            if (res.success) {
+                // Prepare Google Calendar link
+                const start = new Date(selectedDate);
+                const [h, m] = selectedTime.split(':');
+                start.setHours(h, m, 0);
+                const end = new Date(start.getTime() + 60*60*1000); // Default 1hr
+                
+                const fmt = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(selectedService.name + ' @ ' + busData.name)}&dates=${fmt(start)}/${fmt(end)}&details=${encodeURIComponent('Booking for ' + name + '\\n' + notes)}&location=${encodeURIComponent(busData.address)}`;
+                
+                document.getElementById('gcal-btn').href = gcalUrl;
+                document.getElementById('success-modal').classList.remove('hidden');
+                showNotification('Experience Confirmed!', 'success');
+            }
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+            location.reload();
+        }
+        function showNotification(msg, type) {
+            const el = document.createElement('div'); el.className = `notification p-5 rounded-2xl text-white font-bold shadow-2xl flex items-center ${type==='error'?'bg-red-500':'bg-gradient-to-r from-purple-600 to-indigo-600'}`;
+            el.innerHTML = `<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'} mr-3"></i> ${msg}`;
+            document.getElementById('notification-container').appendChild(el); setTimeout(() => el.style.opacity = '0', 3500); setTimeout(() => el.remove(), 4000);
+        }
+        function openLightbox(src) { 
+            currentLightboxIndex = gallery.indexOf(src);
+            if (currentLightboxIndex === -1) currentLightboxIndex = 0;
+            document.getElementById('lightbox-img').src = src; 
+            document.getElementById('lightbox-modal').classList.add('active'); 
+        }
+        function closeLightbox() { document.getElementById('lightbox-modal').classList.remove('active'); }
+        function changeLightboxImage(direction) {
+            if (!gallery?.length) return;
+            currentLightboxIndex = (currentLightboxIndex + direction + gallery.length) % gallery.length;
+            document.getElementById('lightbox-img').src = gallery[currentLightboxIndex];
+        }
+
+        function toggleMobileMenu() {
+            const nav = document.querySelector('nav .hidden.md\\:flex');
+            nav.classList.toggle('hidden');
+            nav.classList.toggle('flex');
+            nav.classList.toggle('flex-col');
+            nav.classList.toggle('absolute');
+            nav.classList.toggle('top-16');
+            nav.classList.toggle('left-0');
+            nav.classList.toggle('right-0');
+            nav.classList.toggle('glass');
+            nav.classList.toggle('p-6');
+            nav.classList.toggle('space-y-4');
+            nav.classList.toggle('space-x-0');
+        }
+
+        let autoplayInterval;
+        function startAutoplay() {
+            if (autoplayInterval) clearInterval(autoplayInterval);
+            autoplayInterval = setInterval(() => scrollGallery(1), 5000);
+        }
+
+        function scrollGallery(dir) {
+            const container = document.getElementById('gallery-grid');
+            const scrollAmount = container.offsetWidth * 0.5;
+            if (container.scrollLeft + container.offsetWidth >= container.scrollWidth - 10) {
+                container.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                container.scrollBy({ left: dir * scrollAmount, behavior: 'smooth' });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => loadBookingData());
+    </script>
+</body>
+</html>
