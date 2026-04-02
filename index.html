@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookNow - Smart Booking System</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- Custom Assets -->
+    <link rel="stylesheet" href="css/style.css">
+    <base target="_blank">
+</head>
+<body class="text-gray-800 overflow-x-hidden">
+    <nav class="fixed top-0 left-0 right-0 z-[100] glass border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center cursor-pointer" onclick="showPage('booking')">
+                    <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center text-white font-bold text-xl mr-3 shadow-lg"> B </div>
+                    <span class="font-bold text-xl tracking-tight text-gray-900 uppercase" id="nav-business-name">BookNow</span>
+                </div>
+                <div class="hidden md:flex space-x-10">
+                    <button onclick="scrollToBookingSection()" class="nav-btn text-gray-700 hover:text-purple-600 font-bold transition text-sm uppercase tracking-widest">Book Appointment</button>
+                    <button onclick="showAdminLogin()" class="nav-btn text-gray-700 hover:text-purple-600 font-bold transition flex items-center text-sm uppercase tracking-widest"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</button>
+                </div>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-gray-700"><i class="fas fa-bars text-2xl"></i></button>
+            </div>
+        </div>
+    </nav>
+    <div id="notification-container" class="fixed top-20 right-4 z-[100] space-y-2"></div>
+
+    <!-- BOOKING PAGE -->
+    <div id="booking-page" class="page min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Hero Section -->
+            <div class="text-center mb-12 animate-slide-in">
+                <h1 class="text-5xl md:text-7xl font-bold text-gray-900 mb-6" id="hero-title">Book Luxe Experience</h1>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto" id="hero-subtitle">Professional services tailored to your schedule.</p>
+                <div class="mt-10">
+                    <button onclick="scrollToBookingSection()" class="gradient-bg text-white font-black px-12 py-5 rounded-2xl text-sm transition-all hover:scale-105 shadow-xl uppercase tracking-widest">Book Appointment Now</button>
+                </div>
+                <div class="flex justify-center space-x-6 mt-10">
+                    <a id="instagram-link" href="#" target="_blank" class="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center text-pink-500 hover:scale-110 transition"><i class="fab fa-instagram text-2xl"></i></a>
+                    <a id="tiktok-link" href="#" target="_blank" class="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center text-black hover:scale-110 transition"><i class="fab fa-tiktok text-2xl"></i></a>
+                </div>
+            </div>
+
+            <div class="mb-8 relative group">
+                <div class="relative max-w-[100vw] mx-auto overflow-hidden">
+                    <button onclick="scrollGallery(-1)" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/80 backdrop-blur rounded-full shadow-xl flex items-center justify-center text-gray-900 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 -translate-x-6"><i class="fas fa-chevron-left"></i></button>
+                    <div id="gallery-grid" class="flex overflow-x-auto gap-6 pb-6 transition-all scroll-smooth no-scrollbar snap-x snap-mandatory px-4"></div>
+                    <button onclick="scrollGallery(1)" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/80 backdrop-blur rounded-full shadow-xl flex items-center justify-center text-gray-900 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 translate-x-6"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="mt-8 text-center animate-slide-in">
+                    <button onclick="openFullGallery()" class="text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-purple-600 transition border border-gray-200 rounded-2xl px-8 py-3.5 shadow-sm bg-white/50 backdrop-blur"><i class="fas fa-th mr-2"></i> View Full Gallery</button>
+                </div>
+            </div>
+
+            <div id="booking-section" class="grid lg:grid-cols-12 gap-10 items-start">
+                <div class="lg:col-span-4 space-y-8">
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/50 shadow-2xl space-y-6">
+                        <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 flex items-center"><i class="fas fa-magic mr-3 text-purple-600"></i> Select Experience</h3>
+                        <div id="service-grid" class="space-y-4"></div>
+                    </div>
+                </div>
+                <div class="lg:col-span-8 space-y-8">
+                    <div class="glass p-10 rounded-[3rem] border border-white/50 shadow-2xl">
+                        <div class="flex justify-between items-center mb-10">
+                            <button onclick="changeMonth(-1)" class="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition"><i class="fas fa-chevron-left"></i></button>
+                            <h4 id="current-month" class="text-2xl font-black uppercase tracking-widest"></h4>
+                            <button onclick="changeMonth(1)" class="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-4 mb-4"></div>
+                    </div>
+                    <div id="time-selection-area" class="glass p-10 rounded-3xl hidden">
+                        <div id="time-slots" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                    </div>
+                    <div id="booking-form-area" class="glass p-10 rounded-3xl hidden">
+                        <form onsubmit="handleBooking(event)" class="space-y-6">
+                            <input type="text" id="custName" class="w-full p-4 rounded-xl border" placeholder="Name">
+                            <input type="email" id="custEmail" class="w-full p-4 rounded-xl border" placeholder="Email">
+                            <input type="tel" id="custPhone" class="w-full p-4 rounded-xl border" placeholder="Phone">
+                            <textarea id="custNotes" class="w-full p-4 rounded-xl border" placeholder="Notes"></textarea>
+                            <button type="submit" class="w-full gradient-bg text-white font-bold py-4 rounded-xl">Confirm</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="admin-login-modal" class="fixed inset-0 z-[110] hidden bg-black/80 backdrop-blur-md flex items-center justify-center">
+        <div class="bg-white p-10 rounded-3xl w-full max-w-md shadow-2xl">
+            <h3 class="text-2xl font-bold mb-6 text-center">Admin Access</h3>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-6">
+                <input type="password" id="admin-password-input" class="w-full p-4 border rounded-xl" placeholder="Password">
+                <button type="submit" class="w-full gradient-bg text-white font-bold py-4 rounded-xl">Login</button>
+                <button type="button" onclick="closeAdminLogin()" class="w-full text-gray-500">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Page -->
+    <div id="admin-page" class="page hidden min-h-screen pt-24 px-8">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-4xl font-bold mb-8">Admin Dashboard</h1>
+            <div id="admin-services-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </div>
+    </div>
+
+    <footer class="mt-20 border-t border-gray-100 pt-16 pb-12 text-center">
+        <h3 class="font-bold text-xl uppercase mb-2" id="footer-business-name">BookNow</h3>
+        <p class="text-[10px] text-gray-300 font-black uppercase tracking-widest">Powered by Antigravity AI &bull; 2026</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
