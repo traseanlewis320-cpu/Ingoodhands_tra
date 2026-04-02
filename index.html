@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookNow 2026 | Smart Booking</title>
+    <style>
+        @layer base, components, utilities;
+        
+        @layer base {
+            :root {
+                --p-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                --radius-xl: 2rem;
+                --blur-glass: blur(12px);
+            }
+            body { 
+                background: #f9fafb; 
+                font-family: system-ui, -apple-system, sans-serif;
+                margin: 0;
+            }
+        }
+
+        /* 2026: Native CSS Nesting */
+        .glass-nav {
+            position: fixed;
+            top: 0; width: 100%;
+            backdrop-filter: var(--blur-glass);
+            background: rgba(255,255,255,0.7);
+            z-index: 1000;
+            
+            & .container {
+                display: flex;
+                justify-content: space-between;
+                padding: 1rem 2rem;
+            }
+        }
+
+        /* Gallery via CSS Scroll Timeline (No JS needed for scroll effects) */
+        .gallery-track {
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            view-timeline: --gallery x;
+        }
+
+        .gallery-item {
+            scroll-snap-align: center;
+            animation: reveal linear both;
+            animation-timeline: --gallery;
+            animation-range: entry 5% cover 30%;
+        }
+
+        @keyframes reveal {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="glass-nav">
+        <div class="container">
+            <div class="logo"><strong>B</strong> BOOKNOW</div>
+            <div class="links">
+                <a href="#booking">Schedule</a>
+                <a href="/admin">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <booking-calendar id="booking"></booking-calendar>
+        
+        <section class="gallery-section">
+            <div class="gallery-track" id="gallery">
+                </div>
+        </section>
+    </main>
+
+    <script type="module">
+        class BookingCalendar extends HTMLElement {
+            connectedCallback() {
+                this.innerHTML = `
+                    <div class="calendar-card">
+                        <h2>Select your Experience</h2>
+                        <div class="grid" id="svc-list"></div>
+                    </div>
+                `;
+                this.loadServices();
+            }
+
+            async loadServices() {
+                const res = await fetch('/api/services');
+                const data = await res.json();
+                this.querySelector('#svc-list').innerHTML = data.map(s => `
+                    <button class="service-chip">
+                        <span>${s.name}</span>
+                        <strong>$${s.price}</strong>
+                    </button>
+                `).join('');
+            }
+        }
+        customElements.define('booking-calendar', BookingCalendar);
+    </script>
+</body>
+</html>
