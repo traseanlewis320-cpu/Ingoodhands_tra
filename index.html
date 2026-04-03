@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina | Modern Booking Experience</title>
+    <meta name="description" content="Book your next appointment with Lumina. Professional services, seamless scheduling, and premium experience.">
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="floating-gallery" id="floating-gallery">
+        <!-- Cards will be injected by JS -->
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar / Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>LUMINA</span>
+            </div>
+            <ul class="nav-steps">
+                <li class="step active" data-step="1">
+                    <span class="step-num">01</span>
+                    <span class="step-label">Service</span>
+                </li>
+                <li class="step" data-step="2">
+                    <span class="step-num">02</span>
+                    <span class="step-label">Date & Time</span>
+                </li>
+                <li class="step" data-step="3">
+                    <span class="step-num">03</span>
+                    <span class="step-label">Details</span>
+                </li>
+                <li class="step" data-step="4">
+                    <span class="step-num">04</span>
+                    <span class="step-label">Confirm</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header>
+                <h1 id="step-title">Select a Service</h1>
+                <p id="step-subtitle">Choose the experience that fits your needs.</p>
+            </header>
+
+            <div class="wizard-container">
+                <!-- Step 1: Services -->
+                <section id="step-1" class="wizard-step active">
+                    <div class="services-grid">
+                        <div class="service-card" data-id="consult">
+                            <div class="service-icon"><i data-lucide="zap"></i></div>
+                            <div class="service-info">
+                                <h3>Elite Consultation</h3>
+                                <p>Deep dive into your project requirements with our top experts.</p>
+                                <span class="price">$149 / hr</span>
+                            </div>
+                        </div>
+                        <div class="service-card" data-id="audit">
+                            <div class="service-icon"><i data-lucide="shield-check"></i></div>
+                            <div class="service-info">
+                                <h3>Premium Audit</h3>
+                                <p>Comprehensive analysis and optimization report for your business.</p>
+                                <span class="price">$299 / session</span>
+                            </div>
+                        </div>
+                        <div class="service-card" data-id="maintenance">
+                            <div class="service-icon"><i data-lucide="settings"></i></div>
+                            <div class="service-info">
+                                <h3>Standard Maintenance</h3>
+                                <p>Regular upkeep and performance monitoring for your existing systems.</p>
+                                <span class="price">$89 / hr</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 2: Date & Time -->
+                <section id="step-2" class="wizard-step">
+                    <div class="date-time-container">
+                        <div class="calendar-wrapper">
+                            <div class="calendar-header">
+                                <button id="prev-month" class="btn-icon"><i data-lucide="chevron-left"></i></button>
+                                <h3 id="current-month">April 2026</h3>
+                                <button id="next-month" class="btn-icon"><i data-lucide="chevron-right"></i></button>
+                            </div>
+                            <div class="calendar-grid">
+                                <div class="day-header">Mo</div>
+                                <div class="day-header">Tu</div>
+                                <div class="day-header">We</div>
+                                <div class="day-header">Th</div>
+                                <div class="day-header">Fr</div>
+                                <div class="day-header">Sa</div>
+                                <div class="day-header">Su</div>
+                                <!-- Days will be injected here -->
+                                <div id="calendar-days" class="days-container"></div>
+                            </div>
+                        </div>
+
+                        <div class="time-slots-wrapper">
+                            <h3>Available Times</h3>
+                            <div class="time-slots-grid" id="time-slots">
+                                <!-- Times will be injected here (8 AM to 8 PM, 30 min) -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 3: Details -->
+                <section id="step-3" class="wizard-step">
+                    <form id="details-form" class="details-grid">
+                        <div class="form-group">
+                            <label for="full-name">Full Name</label>
+                            <input type="text" id="full-name" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="john@example.com" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" placeholder="+1 (555) 000-0000" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="notes">Additional Notes (Optional)</label>
+                            <textarea id="notes" rows="4" placeholder="Any specific requirements..."></textarea>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Step 4: Confirmation -->
+                <section id="step-4" class="wizard-step">
+                    <div class="confirmation-card">
+                        <div class="success-icon"><i data-lucide="party-popper"></i></div>
+                        <h2>Ready to confirm?</h2>
+                        <p>Please review your booking details below.</p>
+                        
+                        <div class="summary-details">
+                            <div class="summary-item">
+                                <span class="label">Service</span>
+                                <span class="value" id="summary-service">Elite Consultation</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Date</span>
+                                <span class="value" id="summary-date">April 15, 2026</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Time</span>
+                                <span class="value" id="summary-time">10:30 AM</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Contact</span>
+                                <span class="value" id="summary-contact">John Doe</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Navigation Controls -->
+            <footer class="wizard-controls">
+                <button id="btn-back" class="btn-secondary" style="visibility: hidden;">
+                    <i data-lucide="arrow-left"></i>
+                    Back
+                </button>
+                <div class="spacer"></div>
+                <button id="btn-next" class="btn-primary">
+                    Next
+                    <i data-lucide="arrow-right"></i>
+                </button>
+            </footer>
+        </main>
+    </div>
+
+    <a href="admin.html" class="admin-link">Dashboard Access</a>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <div class="confetti-container"></div>
+            <div class="modal-body">
+                <div class="check-animation">
+                    <svg viewBox="0 0 52 52">
+                        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                </div>
+                <h2>Booking Confirmed!</h2>
+                <p>We've sent a confirmation email to your inbox.</p>
+                <button id="btn-close-modal" class="btn-primary">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
