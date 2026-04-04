@@ -1,0 +1,392 @@
+/* --- MODERN SALON & SPA MANAGEMENT: INTEGRATED STYLE SYSTEM --- */
+:root {
+    /* Theme 1: Default Night (from 8 themes) */
+    --primary: #6366f1;
+    --primary-glow: rgba(99, 102, 241, 0.4);
+    --secondary: #ec4899;
+    --accent: #8b5cf6;
+    --soft: rgba(99, 102, 241, 0.1);
+    --bg-main: #050810;
+    --bg-card: rgba(15, 23, 42, 0.5);
+    --bg-glass: rgba(255, 255, 255, 0.03);
+    --border-glass: rgba(255, 255, 255, 0.1);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --radius-xl: 32px;
+    --radius-lg: 20px;
+    --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Theme data attributes handled in JS/theme.js */
+* { 
+    transition: background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                color 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.65;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    background-image: 
+        radial-gradient(circle at 10% 10%, var(--primary-glow) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, var(--accent) 5%, transparent 25%);
+    background-attachment: fixed;
+    transition: background-color 0.8s ease;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+p { line-height: 1.8; color: var(--text-secondary); margin-bottom: 1rem; }
+
+/* --- TOP DOWN LAYOUT --- */
+
+.hero-branding {
+    text-align: center;
+    padding: 60px 40px;
+    margin: 20px auto 40px;
+    max-width: 1200px;
+    width: calc(100% - 40px);
+}
+
+.brand-flex-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+@media (max-width: 768px) {
+    .brand-flex-wrap {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    .biz-logo { width: 100px !important; height: 100px !important; }
+    .biz-name { font-size: 50px !important; }
+}
+
+.biz-logo {
+    width: 100px;
+    height: 100px;
+    background: var(--primary);
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 900;
+    margin: 0 auto 20px;
+    color: white;
+    box-shadow: 0 15px 35px var(--primary-glow);
+    overflow: hidden;
+}
+.biz-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+.biz-name {
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    background: linear-gradient(to bottom, #fff, var(--text-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* --- HORIZONTAL FLOATING GALLERY --- */
+
+.floating-gallery-strip {
+    width: calc(100% - 40px);
+    max-width: 1200px;
+    height: 280px;
+    overflow: hidden;
+    position: relative;
+    margin: 0 auto 40px;
+    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+
+.gallery-track {
+    display: flex;
+    gap: 24px;
+    width: max-content;
+    animation: scrollTrack 60s linear infinite;
+}
+
+@keyframes scrollTrack {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.gallery-card-item {
+    width: 220px;
+    height: 280px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    transition: 0.5s var(--transition-smooth);
+}
+
+.gallery-card-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.8;
+}
+
+.gallery-card-item:hover {
+    transform: scale(1.05) translateY(-10px);
+    border-color: var(--primary);
+}
+.gallery-card-item:hover img { opacity: 1; }
+
+.full-gallery-action {
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+/* --- BOOKING SECTION: LEFT SERVICES, RIGHT CALENDAR --- */
+
+.booking-view {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.booking-grid-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 40px;
+    margin-bottom: 100px;
+}
+
+@media (max-width: 900px) { .booking-grid-layout { grid-template-columns: 1fr; } }
+
+.services-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.service-card-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: 0.4s var(--transition-smooth);
+    text-align: left;
+}
+
+.service-card-btn:hover, .service-card-btn.active {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary);
+    transform: translateX(10px);
+    box-shadow: 0 15px 30px var(--primary-glow);
+}
+
+.calendar-wrapper-panel {
+    background: var(--bg-glass);
+    backdrop-filter: blur(24px);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+}
+
+/* Calendar Grid */
+.cal-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.cal-grid-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+}
+
+.cal-day-label { text-align: center; font-weight: 800; font-size: 13px; color: var(--text-secondary); text-transform: uppercase; }
+
+.cal-day-item {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.cal-day-item:hover:not(.disabled) { background: rgba(255, 255, 255, 0.05); }
+.cal-day-item.selected { background: var(--primary); color: white; box-shadow: 0 8px 16px var(--primary-glow); }
+.cal-day-item.disabled { opacity: 0.2; cursor: not-allowed; text-decoration: line-through; }
+
+/* Time Slots */
+.time-slots-flow {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+}
+
+.slot-btn-item {
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-glass);
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    transition: 0.3s;
+}
+
+.slot-btn-item:hover:not(.blocked) { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+.slot-btn-item.selected { background: var(--primary); color: white; border-color: var(--primary); }
+.slot-btn-item.blocked { opacity: 0.2; cursor: not-allowed; text-decoration: line-through; }
+
+/* --- ADMIN Dashboard UI --- */
+
+.admin-access-footer {
+    text-align: center;
+    padding: 60px 0;
+    border-top: 1px solid var(--border-glass);
+}
+
+.admin-link-premium {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    opacity: 0.5;
+    transition: 0.3s;
+}
+
+.admin-link-premium:hover { opacity: 1; color: var(--primary); }
+
+.admin-main-view {
+    padding: 60px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin-card-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    margin-bottom: 30px;
+}
+
+.theme-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.theme-button-opt {
+    height: 80px;
+    border-radius: 16px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: 0.4s;
+}
+.theme-button-opt.active { border-color: white; transform: scale(1.05); }
+
+.drop-load-btn {
+    border: 2px dashed var(--border-glass);
+    padding: 60px;
+    text-align: center;
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: 0.4s;
+    margin-top: 20px;
+}
+.drop-load-btn:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
+
+/* --- Modals & Overlays --- */
+
+.overlay-system {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.overlay-system.active { display: flex; }
+
+.modal-standard {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    max-width: 650px;
+    width: 100%;
+}
+
+.cropper-view-box {
+    width: 100%;
+    max-height: 400px;
+    background: #000;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border-radius: var(--radius-lg);
+}
+
+/* --- Helper Classes --- */
+
+.btn-primary-large {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    border: none;
+    padding: 18px 40px;
+    border-radius: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: 0 10px 25px var(--primary-glow);
+    transition: 0.5s;
+}
+.btn-primary-large:hover { transform: translateY(-4px); box-shadow: 0 15px 35px var(--primary-glow); }
+
+.view-section { display: none; }
+.view-section.active { display: block; animation: fadeIn 0.4s ease-out; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Form Elements */
+.form-grp { margin-bottom: 20px; }
+.form-grp label { display: block; font-size: 12px; text-transform: uppercase; font-weight: 800; color: var(--text-secondary); margin-bottom: 8px; }
+.form-grp input, .form-grp textarea {
+    width: 100%;
+    padding: 15px;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    color: var(--text-primary);
+    border-radius: 12px;
+    transition: 0.3s;
+}
+.form-grp input:focus, .form-grp textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.05);
+}

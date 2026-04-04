@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxe Salon & Spa | Modern Booking Experience</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="purple">
+    
+    <!-- --- MAIN PUBLIC VIEW --- -->
+    <div id="view-home" class="view-section active">
+        <!-- 1. Top Down Header -->
+        <header class="hero-branding admin-card-container">
+            <div class="brand-flex-wrap">
+                <div class="biz-logo" id="main-logo-box" style="width: 140px; height: 140px; flex-shrink: 0; margin: 0;">
+                    <!-- Logo image or fallback B icon -->
+                    <i data-lucide="sparkles" style="width: 60px; height: 60px;"></i>
+                </div>
+                <div style="flex-grow: 1;">
+                    <h1 class="biz-name" id="main-biz-name" style="line-height: 1.1; margin: 0;">Luxe Salon & Spa</h1>
+                    <p id="main-biz-tagline" style="color: var(--text-secondary); margin-top: 10px; font-size: 18px;">Premium beauty and wellness services.</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. Consistently Floating Gallery Strip -->
+        <section class="floating-gallery-strip admin-card-container" style="padding: 0; overflow: hidden;">
+            <div class="gallery-track" id="home-gallery-track">
+                <!-- Gallery items injected twice for seamless loop -->
+            </div>
+        </section>
+
+        <!-- 3. Full Gallery Button -->
+        <div class="full-gallery-action">
+            <button class="btn-primary-large" onclick="window.app.openFullGallery()">View Full Portfolio</button>
+        </div>
+
+        <!-- 4. Booking Flow Section: Services Left, Calendar Right -->
+        <section class="booking-view admin-card-container">
+            <div class="booking-grid-layout">
+                <!-- Left Services -->
+                <div class="services-sidebar">
+                    <h2 style="margin-bottom: 20px;">Select a Service</h2>
+                    <div id="service-list-container" class="services-list">
+                        <!-- Services injected here -->
+                    </div>
+                </div>
+
+                <!-- Right Calendar & Slots -->
+                <div class="calendar-wrapper-panel" style="background: var(--bg-glass);">
+                    <div class="cal-nav">
+                        <button class="btn-icon" id="prev-month"><i data-lucide="chevron-left"></i></button>
+                        <h3 id="current-month-label">April 2026</h3>
+                        <button class="btn-icon" id="next-month"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                    
+                    <div class="cal-grid-body" id="calendar-days-container">
+                        <span class="cal-day-label">Mo</span>
+                        <span class="cal-day-label">Tu</span>
+                        <span class="cal-day-label">We</span>
+                        <span class="cal-day-label">Th</span>
+                        <span class="cal-day-label">Fr</span>
+                        <span class="cal-day-label">Sa</span>
+                        <span class="cal-day-label">Su</span>
+                        <!-- Days injected here -->
+                    </div>
+
+                    <div class="time-slots-flow" id="time-slots-container">
+                        <!-- 8am to 8pm 30min slots -->
+                    </div>
+
+                    <div id="booking-cta-box" style="margin-top: 40px; display: none; text-align: center;">
+                        <button class="btn-primary-large" onclick="window.app.proceedToBooking()">Book Appointment Now</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Admin Section Button (at bottom) -->
+        <footer class="admin-access-footer">
+            <a href="#" class="admin-link-premium" onclick="window.app.showAdmin()">
+                <i data-lucide="layout-dashboard" style="vertical-align: middle; margin-right: 8px;"></i>
+                Administration Dashboard Access
+            </a>
+        </footer>
+    </div>
+
+    <!-- --- DETAILS & CONFIRM VIEW --- -->
+    <div id="view-details" class="view-section" style="padding: 100px 20px;">
+        <div class="modal-standard" style="margin: 0 auto; max-width: 800px;">
+            <h2 id="booking-detail-title">Almost Done!</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 30px;">Please provide your contact details to finalize your appointment.</p>
+            
+            <form id="public-booking-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-grp"><label>Full Name</label><input type="text" id="cust-name" required></div>
+                <div class="form-grp"><label>Email Address</label><input type="email" id="cust-email" required></div>
+                <div class="form-grp"><label>Phone Number</label><input type="tel" id="cust-phone" required></div>
+                <div class="form-grp"><label>Notes (Optional)</label><textarea id="cust-notes" rows="3"></textarea></div>
+                
+                <div style="grid-column: span 2; padding-top: 20px; text-align: center;">
+                    <button type="button" class="btn-primary-large" onclick="window.app.confirmBooking()">Finalize Booking</button>
+                    <button type="button" class="btn-primary-large" style="background: var(--bg-glass); margin-left: 15px;" onclick="window.app.showView('home')">Back</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- --- ADMIN VIEW --- -->
+    <div id="view-admin" class="view-section admin-main-view">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <h1>Admin Control Center</h1>
+            <div>
+                <button class="btn-primary-large" onclick="window.app.showView('home')">View Site</button>
+                <button class="btn-primary-large" style="background: rgba(255,255,255,0.05); margin-left: 15px;" onclick="window.app.logout()">Logout</button>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <!-- Branding Panel -->
+            <section class="admin-card-container">
+                <h3><i data-lucide="edit-3"></i> Logo & Business Info</h3>
+                <div style="margin-top: 20px; display: flex; gap: 20px;">
+                    <div class="biz-logo" style="margin: 0; cursor: pointer;" onclick="document.getElementById('logo-upload').click()">
+                        <img id="admin-logo-preview" src="">
+                        <input type="file" id="logo-upload" hidden accept="image/*">
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <div class="form-grp"><label>Business Name</label><input type="text" id="admin-name" placeholder="Business Name"></div>
+                        <div class="form-grp"><label>Tagline</label><input type="text" id="admin-tagline" placeholder="Tagline"></div>
+                        <div class="form-grp"><label>Admin Access Password</label><input type="text" id="admin-password-edit" placeholder="New Password"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Theme Engine Panel (6 Professional Themes) -->
+            <section class="admin-card-container">
+                <h3><i data-lucide="palette"></i> Elite Professional Themes</h3>
+                <div class="theme-selector-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="theme-button-opt" data-theme="slate" style="background: #0f172a; border-bottom: 6px solid #6366f1;"></div>
+                    <div class="theme-button-opt" data-theme="ocean" style="background: #020617; border-bottom: 6px solid #0ea5e9;"></div>
+                    <div class="theme-button-opt" data-theme="sage" style="background: #06110d; border-bottom: 6px solid #10b981;"></div>
+                    <div class="theme-button-opt" data-theme="velvet" style="background: #1c0c0c; border-bottom: 6px solid #f59e0b;"></div>
+                    <div class="theme-button-opt" data-theme="rose" style="background: #1a0b12; border-bottom: 6px solid #fb7185;"></div>
+                    <div class="theme-button-opt" data-theme="amber" style="background: #0a0a0a; border-bottom: 6px solid #d97706;"></div>
+                </div>
+            </section>
+
+            <!-- Service Menu Management -->
+            <section class="admin-card-container" style="grid-column: span 2;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3><i data-lucide="list"></i> Service Menu Management</h3>
+                    <button class="btn-primary-large" style="padding: 10px 20px; font-size: 14px;" onclick="window.app.openServiceModal()">+ Add New Service</button>
+                </div>
+                <div id="admin-services-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                    <!-- Admin services cards injected here -->
+                </div>
+            </section>
+
+            <!-- Gallery Media Dashboard -->
+            <section class="admin-card-container" style="grid-column: span 2;">
+                <h3><i data-lucide="image"></i> Portfolio & Gallery Media</h3>
+                <div class="drop-load-btn" onclick="document.getElementById('gallery-upload-trigger').click()">
+                    <i data-lucide="upload-cloud" style="width: 48px; height: 48px; margin-bottom: 12px;"></i>
+                    <p>Drop a folder or click to bulk load photos</p>
+                    <input type="file" id="gallery-upload-trigger" multiple hidden accept="image/*">
+                </div>
+                <div id="admin-gallery-preview-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; margin-top: 30px;">
+                    <!-- Gallery cards with delete btn logic in app.js -->
+                </div>
+            </section>
+
+            <!-- Appointments Management -->
+            <section class="admin-card-container" style="grid-column: span 2;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3><i data-lucide="check-circle"></i> Booking Management</h3>
+                    <div style="display: flex; gap: 20px; align-items: center;">
+                        <div class="form-grp" style="margin: 0;"><label>Admin Alert Mobile</label><input type="text" id="admin-sms-phone" placeholder="+1 (555) 000-0000" style="padding: 10px; font-size: 14px;"></div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="client-sms-toggle" checked style="width: 20px; height: 20px;">
+                            <label style="font-size: 13px; color: var(--text-secondary);">Client Confirmations</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="admin-appointments-table" class="admin-table-scroll">
+                    <!-- Appointments list with confirm/deny injected here -->
+                </div>
+            </section>
+
+            <!-- Schedule Blocker -->
+            <section class="admin-card-container" style="grid-column: span 2;">
+                <h3><i data-lucide="calendar-off"></i> Availability Management</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px;">
+                    <div class="calendar-wrapper-panel" id="admin-calendar-blocker" style="background: rgba(0,0,0,0.1);">
+                        <!-- Admin Calendar -->
+                    </div>
+                    <div class="time-slots-flow" id="admin-time-blocker">
+                        <!-- Admin Time Slots -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- --- LOGIN VIEW --- -->
+    <div id="view-login" class="view-section" style="padding: 100px 20px; text-align: center;">
+        <div class="modal-standard" style="margin: 0 auto;">
+            <i data-lucide="lock" style="width: 48px; height: 48px; margin-bottom: 20px;"></i>
+            <h2>Admin Login</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 30px;">Secure area for studio managers.</p>
+            <form id="admin-login-form">
+                <input type="password" id="admin-pass" placeholder="Password" style="width: 100%; padding: 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); border-radius: 12px; margin-bottom: 20px;">
+                <button type="submit" class="btn-primary-large w-full">Unlock Dashboard</button>
+            </form>
+            <button class="admin-link-premium" style="margin-top: 20px;" onclick="window.app.showView('home')">Return to Website</button>
+        </div>
+    </div>
+
+    <!-- --- CROP OVERLAY --- -->
+    <div id="overlay-crop" class="overlay-system">
+        <div class="modal-standard">
+            <h2>Perfect Your Image</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">Position and scale the photo to focus on the best part.</p>
+            <div class="cropper-view-box">
+                <img id="image-to-crop" src="">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 15px;">
+                <button class="btn-primary-large" style="background: rgba(255,255,255,0.05);" onclick="window.app.cancelCrop()">Cancel</button>
+                <button class="btn-primary-large" onclick="window.app.completeCrop()">Apply & Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- --- SERVICE MODAL --- -->
+    <div id="overlay-service" class="overlay-system">
+        <div class="modal-standard" style="max-width: 500px;">
+            <h2 id="service-modal-title">New Service</h2>
+            <form id="admin-service-form" style="margin-top: 20px;">
+                <input type="hidden" id="service-edit-id">
+                <div class="form-grp"><label>Service Name</label><input type="text" id="service-name" required></div>
+                <div class="form-grp"><label>Price ($)</label><input type="number" id="service-price" required></div>
+                <div class="form-grp"><label>Duration (Min)</label><input type="number" id="service-duration" required></div>
+                <div class="form-grp"><label>Description</label><textarea id="service-desc" rows="3"></textarea></div>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-primary-large" style="background: var(--bg-glass);" onclick="document.getElementById('overlay-service').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn-primary-large">Save Service</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN MODULAR LOGIC -->
+    <script type="module">
+        import { StorageManager } from './storage.js';
+        import { ThemeManager } from './theme.js';
+        
+        // Initial instances for modular access if needed
+        window.storageManager = new StorageManager();
+        window.themeManager = new ThemeManager();
+    </script>
+    <script type="module" src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
