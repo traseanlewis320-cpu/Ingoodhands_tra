@@ -135,17 +135,29 @@ class App {
 
     // --- VIEW MANAGEMENT ---
     showView(v) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        const target = document.getElementById(`view-${v}`);
-        if (target) {
-            target.classList.add('active');
-            this.currentView = v;
-        }
-        if (v === 'admin' && !this.isAdmin) this.showView('login');
-        if (v === 'admin') this.initAdminDashboard();
-        window.scrollTo(0,0);
+    document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(`view-${v}`);
+    if (target) {
+        target.classList.add('active');
+        this.currentView = v;
     }
-
+    
+    // Force check if admin access should be granted
+    if (v === 'admin') {
+        const biz = this.storage.getItem('business');
+        if (biz && biz.password === '') {
+            this.isAdmin = true;
+            sessionStorage.setItem('adminToken', 'true');
+        }
+    }
+    
+    if (v === 'admin' && !this.isAdmin) {
+        this.showView('login');
+        return;
+    }
+    if (v === 'admin') this.initAdminDashboard();
+    window.scrollTo(0,0);
+}
     showAdmin() { this.showView('admin'); }
 
     // --- BRANDING ---
