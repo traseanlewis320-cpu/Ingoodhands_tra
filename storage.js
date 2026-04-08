@@ -1,4 +1,3 @@
-// StorageManager: Handles all localStorage operations
 export class StorageManager {
     constructor() {
         this.INIT_DATA = {
@@ -9,26 +8,16 @@ export class StorageManager {
             business: {
                 name: 'Luxe Salon & Spa',
                 tagline: 'Premium beauty and wellness services',
-                password: '', // Empty: Open Access until set
+                password: '', 
                 admin_sms_phone: '+1 (555) 000-0000',
                 email: 'bookings@luxesalon.com',
-                phone: '+1 (555) 123-4567',
-                address: '123 Beauty Lane, NY',
-                hours: 'Mon-Sat: 9AM-7PM',
-                instagram: '',
-                tiktok: '',
                 theme: 'slate',
-                customPrimary: '#6366f1',
-                customAccent: '#ec4899',
-                customSoft: '#f5f3ff',
-                customBodyBg: '#f9fafb',
-                customAdminBg: '#ffffff',
-                bgImage: ''
+                logo: ''
             },
             bookings: [],
             gallery: [
-                'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=800&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop'
+                'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=800',
+                'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800'
             ],
             blocked_slots: []
         };
@@ -36,41 +25,17 @@ export class StorageManager {
     }
 
     init() {
-        if (!localStorage.getItem('booknow_services')) {
-            localStorage.setItem('booknow_services', JSON.stringify(this.INIT_DATA.services));
-        }
-        if (!localStorage.getItem('booknow_business')) {
-            localStorage.setItem('booknow_business', JSON.stringify(this.INIT_DATA.business));
-        } else {
-            // Migration: If the password is still one of our old defaults, clear it for open access as requested
-            const b = this.getItem('business');
-            if (b.password === 'a6e2e0edcbb0e95655452243d78997a61d7634f1958b8f2f4e0c4bca380b3d81' || 
-                b.password === '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822826819e5c24a') {
-                b.password = '';
-                this.setItem('business', b);
+        const keys = ['services', 'business', 'bookings', 'gallery', 'blocked_slots'];
+        keys.forEach(key => {
+            if (!localStorage.getItem(`booknow_${key}`)) {
+                this.setItem(key, this.INIT_DATA[key]);
             }
-        }
-        if (!localStorage.getItem('booknow_bookings')) {
-            localStorage.setItem('booknow_bookings', JSON.stringify(this.INIT_DATA.bookings));
-        }
-        if (!localStorage.getItem('booknow_gallery')) {
-            localStorage.setItem('booknow_gallery', JSON.stringify(this.INIT_DATA.gallery));
-        }
-        if (!localStorage.getItem('booknow_blocked_slots')) {
-            localStorage.setItem('booknow_blocked_slots', JSON.stringify(this.INIT_DATA.blocked_slots));
-        }
+        });
     }
 
-    // Generic CRUD
-    getItem(key) {
-        return JSON.parse(localStorage.getItem(`booknow_${key}`));
-    }
+    getItem(key) { return JSON.parse(localStorage.getItem(`booknow_${key}`)); }
+    setItem(key, data) { localStorage.setItem(`booknow_${key}`, JSON.stringify(data)); }
 
-    setItem(key, data) {
-        localStorage.setItem(`booknow_${key}`, JSON.stringify(data));
-    }
-
-    // Specific CRUD for services/bookings
     add(key, item) {
         const data = this.getItem(key);
         item.id = Date.now();
